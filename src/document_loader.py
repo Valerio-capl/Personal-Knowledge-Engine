@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
+from document_exceptions import (
+  DocumentParsingError,
+  EncodingDetectionError,
+)
 from dataclasses import dataclass
 from charset_normalizer import from_path
 import fitz
@@ -45,15 +49,16 @@ class DocumentLoader(ABC):
     try:
       result = from_path(str(self.file_path)).best()
     except OSError as e:
-      raise Exception(
+      raise EncodingDetectionError(
         f"Unable to read file {self.file_path}: {e}"
       ) from e
  
     if result is None:
-      raise Exception(
+      raise EncodingDetectionError(
         f"Unable to detect file encoding {self.file_path}"
       )
     return str(result)
+
 
 class TxtDocumentLoader(DocumentLoader):
   def load(self) -> list[LoadedDocument]:
@@ -64,13 +69,15 @@ class TxtDocumentLoader(DocumentLoader):
       metadata=self._get_metadata(page_number=1)
     )]
 
-
 class PdfDocumentLoader(DocumentLoader):
   def load(self) -> list[LoadedDocument]:
     documents = []
     with fitz.open(str(self.file_path)) as file:
       for page_idx, page in enumerate(file, start=1):
-        text = page.get_text()
+        try:
+          text = page.get_text()
+        except Exception as e:
+          raise DocumentParsingError(f"Errore nell'estrazione testo dalla pagina {page_idx} di {self.file_path}: {e}")
         if not text.strip():
           continue
         documents.append(
@@ -87,12 +94,12 @@ class DocxDocumentLoader(DocumentLoader):
     try:
       doc = Document(str(self.file_path))
     except Exception as e:
-      raise Exception(f"Impossibile aprire il DOCX {self.file_path}: {e}")
+      raise DocumentParsingError(f"Impossibile aprire il DOCX {self.file_path}: {e}")
     
     try:
       content = self._extract_content(doc)
     except Exception as e:
-      raise Exception(f"Errore nell'estrazione del contenuto da {self.file_path}: {e}")
+      raise DocumentParsingError(f"Errore nell'estrazione del contenuto da {self.file_path}: {e}")
     
     return [LoadedDocument(
       document_type="docx",
@@ -144,7 +151,7 @@ class HtmlDocumentLoader(DocumentLoader):
       soup = BeautifulSoup(raw_html, "html.parser")
       content = soup.get_text(separator="\n", strip=True)
     except Exception as e:
-      raise Exception(f"Errore nel parsing HTML di {self.file_path}: {e}")
+      raise DocumentParsingError(f"Errore nel parsing HTML di {self.file_path}: {e}")
     
     return [LoadedDocument(
       document_type="html",
