@@ -146,3 +146,76 @@ class RecursiveCharacterTextSplitter(TextSplitter):
             ))
             idx += 1
         return chunks
+    
+class MarkdownAwareTextSplitter(TextSplitter):
+    """Splitter for markdown"""
+ 
+    HEADER_PATTERN = re.compile(r"^(#{1,6})\s+(.*)$")
+    
+    def __init__(self, chunk_size: int = 500, chunk_overlap: int = 50, encoding_name: str = "cl100k_base",):
+        super().__init__(chunk_size, chunk_overlap, encoding_name)
+        self._fallback_splitter = RecursiveCharacterTextSplitter(
+        chunk_size, chunk_overlap, encoding_name
+        )
+ 
+    def split(self, document: LoadedDocument) -> list[Chunk]:
+        sections = self._split_by_headers(document.content)
+        chunks: list[Chunk] = []
+        idx = 0
+    
+        for section_title, section_text in sections:
+            if self._count_tokens(section_text) <= self.chunk_size:
+                chunks.append(Chunk(
+                    content=section_text,
+                    chunk_index=idx,
+                    token_count=self._count_tokens(section_text),
+                    source_metadata=document.metadata,
+                    chunk_id=self._make_chunk_id(document.metadata.filepath, idx),
+                    section_title=section_title,
+                ))
+                idx += 1
+                continue
+
+            sub_pieces = self._fallback_splitter._split_text(section_text, self._fallback_splitter.separators)
+            for sub_text in sub_pieces:
+                sub_text = sub_text.strip()
+                if not sub_text:
+                    continue
+                chunks.append(Chunk(
+                    content=sub_text,
+                    chunk_index=idx,
+                    token_count=self._count_tokens(sub_text),
+                    source_metadata=document.metadata,
+                    chunk_id=self._make_chunk_id(document.metadata.filepath, idx),
+                    section_title=section_title,
+                ))
+                idx += 1
+
+        return chunks
+ 
+    def _split_by_headers(self, text: str) -> list[tuple[str | None, str]]:
+        lines = text.split("\n")
+        sections: list[tuple[str | None, str]] = []
+        title_stack: list[tuple[int, str]] = []
+        current_lines: list[str] = []
+    
+        def flush():
+            content = "\n".join(current_lines).strip()
+            if content:
+                title = " > ".join(t for _, t in title_stack) if title_stack else None
+                sections.append((title, content))
+                
+        for line in lines:
+            match = self.HEADER_PATTERN.match(line)
+            if match:
+                flush()
+                current_lines = [line]
+                level = len(match.group(1))
+                title = match.group(2).strip()
+                title_stack = [t for t in title_stack if t[0] < level]
+                title_stack.append((level, title))
+            else:
+                current_lines.append(line)
+            
+        flush()
+        return sections
