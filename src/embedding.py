@@ -50,8 +50,8 @@ class EmbeddingProvider(ABC):
     
     def embed_chunks(self, chunks: list[Chunk]) -> list[EmbeddedChunk]:
         valid_chunks = [c for c in chunks if c.content.strip()]
-        skipped = len(chunks) - len(valid_chunks) 
-        #add logging to track skipped empty chunks
+        # skipped = len(chunks) - len(valid_chunks) 
+        # add logging to track skipped empty chunks
     
         embedded: list[EmbeddedChunk] = []
         for batch in self._batched(valid_chunks, self.batch_size):
@@ -66,7 +66,14 @@ class EmbeddingProvider(ABC):
                     dimensions=vector.shape[0],
                 ))
         return embedded
+
+    def embed_query(self, text: str) -> np.ndarray:
+        if not text.strip():
+            raise InvalidEmbeddingConfigError("Il testo della query non può essere vuoto")
     
+        vectors = self._embed_batch_with_retry([text])
+        return vectors[0]
+
     def _embed_batch_with_retry(self, texts: list[str]) -> list[np.ndarray]:
         attempt = 0
         while True:
