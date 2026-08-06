@@ -10,13 +10,9 @@ from src.text_splitter import (
 	MarkdownAwareTextSplitter,
 )
 
-
 # mock del tokenizer
-
 class _FakeEncoding:
-	"""Mock and deterministic encoder: 1 token per word/punctuation mark. It replaces 
-	tiktoken.get_encoding so tests don't depend  on downloading the real vocabulary.
-	"""
+	"""Mock and deterministic encoder"""
 	def encode(self, text, disallowed_special=()):
 		return re.findall(r"\w+|[^\w\s]", text)
 
@@ -26,7 +22,7 @@ _KNOWN_ENCODINGS = {"cl100k_base", "o200k_base", "p50k_base", "r50k_base"}
 @pytest.fixture(autouse=True)
 def mock_tiktoken(monkeypatch):
 	def _fake_get_encoding(name):
-		# Replicates real tiktoken behavior: unknown names raise ValueError.
+		# Replicates real tiktoken behavior.
 		if name not in _KNOWN_ENCODINGS:
 			raise ValueError(f"Unknown encoding {name!r}")
 		return _FakeEncoding()
@@ -38,11 +34,11 @@ def mock_tiktoken(monkeypatch):
 @pytest.mark.parametrize(
 	"chunk_size, chunk_overlap",
 	[
-		(0, 0),      # chunk_size not positive
-		(-10, 0),    # negative chunk_size
-		(100, -5),   # negative chunk_overlap
-		(100, 100),  # chunk_overlap == chunk_size
-		(100, 150),  # chunk_overlap > chunk_size
+		(0, 0),
+		(-10, 0),
+		(100, -5),
+		(100, 100),
+		(100, 150),
 	],
 )
 def test_splitter_rejects_invalid_config(chunk_size, chunk_overlap):
@@ -99,7 +95,6 @@ def test_consecutive_chunks_share_overlapping_content(make_file_metadata):
 	chunks = splitter.split(document)
 
 	assert len(chunks) >= 2
-	# With overlap>0 and repetitive text, the end of the first chunk and the start of the second must share some text.
 	assert chunks[0].content.strip().endswith("word.")
 	assert chunks[1].content.strip().startswith("word.")
 
@@ -125,7 +120,7 @@ def test_markdown_splitter_assigns_section_title_from_headers(make_file_metadata
 	titles = [c.section_title for c in chunks]
 	assert "Introduction" in titles[0]
 	assert "Details" in titles[-1]
-	# Nested breadcrumb: The child section also includes the parent title
+	# Nested breadcrumb child section also includes the parent title
 	assert "Introduction" in titles[-1]
 
 def test_markdown_splitter_falls_back_to_recursive_for_oversized_section(make_file_metadata):
