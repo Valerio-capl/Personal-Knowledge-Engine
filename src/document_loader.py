@@ -1,6 +1,7 @@
+import hashlib
 from abc import ABC, abstractmethod
 from pathlib import Path
-from document_exceptions import (
+from .document_exceptions import (
 	DocumentParsingError,
 	EncodingDetectionError,
 )
@@ -18,6 +19,7 @@ class FileMetadata:
 	filepath: str
 	extension: str
 	size_bytes: int
+	content_hash: str
 	page_number:int | None = None
 
 @dataclass(frozen=True)
@@ -31,11 +33,23 @@ class DocumentLoader(ABC):
 		self.file_path = Path(file_path).resolve()
 		if not self.file_path.is_file():
 			raise FileNotFoundError(self.file_path)
+		self._content_hash = self._compute_content_hash()
 
 	@abstractmethod
 	def load(self) -> list[LoadedDocument]:
 		""" load document """
 		pass
+
+	def _compute_content_hash(self) -> str:
+		hasher = hashlib.sha256()
+		try:
+			with open(self.file_path, "rb") as f:
+				for block in iter(lambda: f.read(65536), b""):
+					hasher.update(block)
+		except OSError as e:
+			raise DocumentParsingError(f"Unable to read file {self.file_path} for hashing: {e}") from e
+		return hasher.hexdigest()
+
 	def _get_metadata(self,page_number:int = None) -> FileMetadata:
 		stat = self.file_path.stat()
 		return FileMetadata(
@@ -43,10 +57,10 @@ class DocumentLoader(ABC):
 			filepath=str(self.file_path),
 			extension=self.file_path.suffix,
 			size_bytes=stat.st_size,
+			content_hash=self._content_hash,
 			page_number=page_number
 		)
 	def _read_text_auto_encoding(self) -> str:
-		""" reads the text content of the file automatically detecting the encoding """
 		try:
 			result = from_path(str(self.file_path)).best()
 		except OSError as e:
