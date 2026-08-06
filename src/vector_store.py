@@ -24,11 +24,7 @@ class SearchResult:
 
 
 class VectorStore(ABC):
-    """Common interface for any vector store backend.
-    Concrete implementations decide how vectors are indexed and searched;
-    this class only defines the public contract and common validation
-    (dimensions, embedding model consistency among inserted chunks).
-    """
+    """Base interface for vector store backends."""
 
     def __init__(self, dimensions: int):
         if dimensions <= 0:
@@ -119,9 +115,7 @@ class NumpyVectorStore(VectorStore):
 
     def search(self, query_vector: np.ndarray, top_k: int = 5) -> list[SearchResult]:
         if top_k <= 0:
-            raise InvalidVectorStoreConfigError(
-                "top_k must be a positive integer"
-            )
+            raise InvalidVectorStoreConfigError("top_k must be a positive integer")
         if query_vector.shape[0] != self.dimensions:
             raise VectorDimensionMismatchError(
                 f"The query vector has {query_vector.shape[0]} dimensions, "
@@ -131,15 +125,12 @@ class NumpyVectorStore(VectorStore):
             return []
 
         matrix = self._get_matrix()
+        # normalized dot product == cosine similarity
         normalized_query = self._normalize(query_vector)
-
-        # if both sides are normalized dot product equals cosine similarity
         scores = matrix @ normalized_query
-
         k = min(top_k, len(self._chunks))
-
-        # argpartition selects the k best elements without sorting the entire array,
-        # then only those k elements are sorted by descending score
+        
+        # extract top-k without full array sort
         top_indices = np.argpartition(-scores, k - 1)[:k]
         top_indices = top_indices[np.argsort(-scores[top_indices])]
 
@@ -220,8 +211,7 @@ class NumpyVectorStore(VectorStore):
         return self._matrix_cache
 
     def _invalidate_cache(self) -> None:
-        # The matrix is lazily rebuilt on the next search/save operation
-        # instead of calling vstack on every single add.
+        # invalidate cache, rebuild on next search/save
         self._matrix_cache = None
 
     @staticmethod
