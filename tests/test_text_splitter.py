@@ -2,8 +2,8 @@ import re
 import pytest
 import tiktoken
 
-from src.document_loader import LoadedDocument
-from src.text_splitter import (
+from document.loader import LoadedDocument
+from document.splitter import (
 	Chunk,
 	InvalidChunkConfigError,
 	RecursiveCharacterTextSplitter,

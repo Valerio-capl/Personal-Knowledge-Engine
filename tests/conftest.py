@@ -1,5 +1,5 @@
 import pytest
-from src.document_loader import FileMetadata 
+from document.loader import FileMetadata 
  
 @pytest.fixture
 def make_file_metadata():

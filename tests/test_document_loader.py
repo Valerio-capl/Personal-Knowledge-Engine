@@ -2,14 +2,14 @@ import fitz
 import pytest
 from docx import Document as DocxWriter
 
-from src.document_loader import (
+from document.loader import (
 	TxtDocumentLoader,
 	PdfDocumentLoader,
 	DocxDocumentLoader,
 	HtmlDocumentLoader,
 )
-from src.document_factory import DocumentLoaderFactory
-from src.document_exceptions import DocumentParsingError, UnsupportedFormatError
+from document.factory import DocumentLoaderFactory
+from document.exceptions import DocumentParsingError, UnsupportedFormatError
 
 
 # DocumentLoader base behaviour
