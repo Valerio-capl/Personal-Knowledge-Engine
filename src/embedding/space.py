@@ -1,5 +1,5 @@
-import json
 import re
+import database.db as db
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -37,13 +37,23 @@ class VectorSpaceManager:
         self._storage_dir.mkdir(parents=True, exist_ok=True)
         self._stores: dict[str, VectorStore] = {}
         self._space_configs: dict[str, EmbeddingSpaceConfig] = {}
+        db.init_db()
 
     def index_chunks(self, space: EmbeddingSpaceConfig, chunks: list[Chunk]) -> None:
         self._space_configs[space.space_id] = space
+        db.register_space(space.space_id, space.provider_name, space.model_name)
         embedder = self._get_embedder(space)
         embedded_chunks = embedder.embed_chunks(chunks)
         store = self._get_store(space, dimensions=embedder.dimensions)
         store.add(embedded_chunks)
+
+        chunks_by_file = {}
+        for ec in embedded_chunks:
+            filepath = ec.chunk.source_metadata.filepath
+            chunks_by_file.setdefault(filepath, []).append(ec.chunk.chunk_id)
+ 
+        for filepath, chunk_ids in chunks_by_file.items():
+            db.add_chunks(filepath, space.space_id, chunk_ids)
 
     def search(self, space: EmbeddingSpaceConfig, query_text: str, top_k: int = 5) -> list[SearchResult]:
         """Embed the query in the given space and search only that space."""
@@ -89,28 +99,16 @@ class VectorSpaceManager:
         if store is None:
             return
         store.save(self._store_path(space_id))
-        self._write_manifest(space)
 
     def persist_all(self) -> None:
         for space_id, store in self._stores.items():
             store.save(self._store_path(space_id))
-            space = self._space_configs.get(space_id)
-            if space is not None:
-                self._write_manifest(space)
 
     def discover_spaces(self) -> list[EmbeddingSpaceConfig]:
-        spaces = []
-        for manifest_path in sorted(self._storage_dir.glob("*.space.json")):
-            try:
-                with open(manifest_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                spaces.append(EmbeddingSpaceConfig(
-                    provider_name=data["provider_name"],
-                    model_name=data["model_name"],
-                ))
-            except (OSError, json.JSONDecodeError, KeyError):
-                continue
-        return spaces
+        return [
+            EmbeddingSpaceConfig(provider_name=provider_name, model_name=model_name)
+            for _, provider_name, model_name in db.get_all_spaces()
+        ]
 
     def _get_embedder(self, space: EmbeddingSpaceConfig) -> EmbeddingProvider:
         return EmbeddingProviderFactory.get_provider(
@@ -136,17 +134,6 @@ class VectorSpaceManager:
 
     def _store_path(self, space_id: str) -> Path:
         return self._storage_dir / space_id
-
-    def _write_manifest(self, space: EmbeddingSpaceConfig) -> None:
-        manifest={"provider_name": space.provider_name, "model_name": space.model_name}
-        try:
-            with open(self._manifest_path(space.space_id), "w", encoding="utf-8") as f:
-                json.dump(manifest, f, ensure_ascii=False, indent=2)
-        except OSError:
-            pass
-
-    def _manifest_path(self, space_id: str) -> Path:
-        return self._storage_dir / f"{space_id}.space.json"
 
     @staticmethod
     def _validate_store_matches_space(store: VectorStore, space: EmbeddingSpaceConfig, dimensions: int) -> None:
