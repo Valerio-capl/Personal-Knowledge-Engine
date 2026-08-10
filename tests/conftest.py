@@ -10,6 +10,7 @@ def make_file_metadata():
             extension=".txt",
             size_bytes=100,
             page_number=1,
+            content_hash="fakehash1234567890abcdef"
         )
         defaults.update(overrides)
         return FileMetadata(**defaults)
