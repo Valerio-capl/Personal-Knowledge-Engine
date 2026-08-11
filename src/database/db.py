@@ -8,7 +8,7 @@ DEFAULT_DB_PATH = "rag.db"
 class Database:
     def __init__(self, db_path: str | Path = DEFAULT_DB_PATH):
         self.db_path = Path(db_path)
-        self._init_schema()
+        self.init_schema()
 
     @contextmanager
     def _connect(self):
