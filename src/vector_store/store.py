@@ -8,7 +8,7 @@ import numpy as np
 from document.loader import FileMetadata
 from document.splitter import Chunk
 from embedding.provider import EmbeddedChunk
-from vectore_store.exceptions import (
+from vector_store.exceptions import (
     EmbeddingModelMismatchError,
     InvalidVectorStoreConfigError,
     VectorDimensionMismatchError,
