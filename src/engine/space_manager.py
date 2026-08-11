@@ -153,3 +153,16 @@ class VectorSpaceManager:
  
         for filepath, chunk_ids in chunks_by_file.items():
             self._db.add_chunks(filepath, space_id, chunk_ids)
+
+    def delete_chunks(self, space: EmbeddingSpaceConfig, chunk_ids: list[str]) -> None:
+        """Remove chunks from the store for this space."""
+        store = self._stores.get(space.space_id)
+
+        if store is None:
+            store_path = self._store_path(space.space_id)
+            if not (store_path.with_suffix(".npy").exists() and store_path.with_suffix(".json").exists()):
+                return
+            store = NumpyVectorStore.load(store_path)
+            self._stores[space.space_id] = store
+
+        store.delete(chunk_ids)
