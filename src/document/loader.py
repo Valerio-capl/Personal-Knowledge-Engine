@@ -34,6 +34,10 @@ class DocumentLoader(ABC):
 		if not self.file_path.is_file():
 			raise FileNotFoundError(self.file_path)
 		self._content_hash = self._compute_content_hash()
+		
+	@property
+	def content_hash(self) -> str:
+		return self._content_hash
 
 	@abstractmethod
 	def load(self) -> list[LoadedDocument]:
