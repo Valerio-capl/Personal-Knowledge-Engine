@@ -27,7 +27,7 @@ class SyncEngine:
         self._db = database
         self._vsm = vector_space_manager
 
-    def sync_folder(self, base_folder:str | Path, space: EmbeddingSpaceConfig) -> SyncReport:
+    def sync(self, base_folder:str | Path, space: EmbeddingSpaceConfig) -> SyncReport:
         base_folder = self._validate_folder(base_folder)
         report = SyncReport()
         
