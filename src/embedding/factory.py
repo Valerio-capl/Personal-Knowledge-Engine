@@ -1,4 +1,4 @@
-from embedding.provider import EmbeddingProvider, OpenAIEmbeddingProvider
+from embedding.providers import EmbeddingProvider, OpenAIEmbeddingProvider
 from embedding.exceptions import UnsupportedEmbeddingProviderError
 
 

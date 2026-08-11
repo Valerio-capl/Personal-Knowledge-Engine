@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from database.db import Database
-from embedding.provider import EmbeddingProvider
+from embedding.providers import EmbeddingProvider
 from embedding.factory import EmbeddingProviderFactory
 from embedding.exceptions import EmbeddingAPIError, InvalidEmbeddingConfigError
 from vector_store.store import VectorStore, NumpyVectorStore, SearchResult

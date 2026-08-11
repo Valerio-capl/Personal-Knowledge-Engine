@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from document.splitter import Chunk
-from embedding.provider import EmbeddedChunk
+from embedding.providers import EmbeddedChunk
 from vector_store.exceptions import (
     EmbeddingModelMismatchError,
     InvalidVectorStoreConfigError,
