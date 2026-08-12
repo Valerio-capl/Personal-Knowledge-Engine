@@ -35,6 +35,7 @@ class SyncEngine:
             if not file_path.is_file():
                 continue
             self._sync_file(file_path, space, report)
+        self._vsm.persist(space)
         return report
 
     def _sync_file(self, file_path: Path, space: EmbeddingSpaceConfig, report:SyncReport) -> None:
