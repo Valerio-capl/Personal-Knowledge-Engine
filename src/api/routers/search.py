@@ -1,13 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from api.dependencies import vsm
-from api.schemas import SearchRequest
-from engine.space_manager import EmbeddingSpaceConfig
+from api.dependencies import get_vector_space_manager
+from api.schemas import SearchRequest, SearchResultResponse
+from engine.space_manager import EmbeddingSpaceConfig, VectorSpaceManager
 
 router = APIRouter()
 
-@router.post("/search")
-def run_search(request: SearchRequest):
+@router.post("/search", response_model=list[SearchResultResponse])
+def run_search(request: SearchRequest, vsm: VectorSpaceManager = Depends(get_vector_space_manager)) -> list[SearchResultResponse]:
     space = EmbeddingSpaceConfig(
         provider_name=request.provider_name,
         model_name=request.model_name,
@@ -15,11 +15,11 @@ def run_search(request: SearchRequest):
     results = vsm.search(space, request.query, top_k=request.top_k)
 
     return [
-        {
-            "content": r.chunk.content,
-            "score": r.score,
-            "rank": r.rank,
-            "filepath": r.chunk.source_metadata.filepath,
-        }
+        SearchResultResponse(
+            content=r.chunk.content,
+            score=r.score,
+            rank=r.rank,
+            filepath=r.chunk.source_metadata.filepath,
+        )
         for r in results
     ]

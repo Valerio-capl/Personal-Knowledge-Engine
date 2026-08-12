@@ -1,23 +1,22 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from api.dependencies import db, vsm
-from api.schemas import SyncRequest
+from api.dependencies import get_sync_engine
+from api.schemas import SyncRequest, SyncResponse
 from engine.sync import SyncEngine
 from engine.space_manager import EmbeddingSpaceConfig
 
 router = APIRouter()
 
-@router.post("/sync")
-def run_sync(request: SyncRequest):
+@router.post("/sync", response_model=SyncResponse)
+def run_sync(request: SyncRequest, sync_engine: SyncEngine = Depends(get_sync_engine)) -> SyncResponse:
     space = EmbeddingSpaceConfig(
         provider_name=request.provider_name,
         model_name=request.model_name,
     )
-    sync_engine = SyncEngine(database=db, vector_space_manager=vsm)
     report = sync_engine.sync(request.folder_path, space)
 
-    return {
-        "synced": report.synced,
-        "skipped": report.skipped,
-        "failed": report.failed,
-    }
+    return SyncResponse(
+        synced=report.synced,
+        skipped=report.skipped,
+        failed=report.failed,
+    )
