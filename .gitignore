@@ -1,0 +1,17 @@
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+.vscode/
+.DS_Store
+
+sample_docs/
+rag.db
+vector_spaces/
+
+.env
+env/
+venv/
+ENV/
