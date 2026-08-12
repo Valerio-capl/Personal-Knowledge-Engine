@@ -1,4 +1,4 @@
-from embedding.providers import EmbeddingProvider, OpenAIEmbeddingProvider
+from embedding.providers import EmbeddingProvider, OpenAIEmbeddingProvider, OllamaEmbeddingProvider
 from embedding.exceptions import UnsupportedEmbeddingProviderError
 
 
@@ -27,3 +27,4 @@ class EmbeddingProviderFactory:
 
 
 EmbeddingProviderFactory.register("openai")(OpenAIEmbeddingProvider)
+EmbeddingProviderFactory.register("ollama")(OllamaEmbeddingProvider)

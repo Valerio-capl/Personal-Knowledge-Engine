@@ -1,2 +1,3 @@
 from .base_provider import EmbeddingProvider, EmbeddedChunk
 from .openai_provider import OpenAIEmbeddingProvider
+from .ollama_provider import OllamaEmbeddingProvider
