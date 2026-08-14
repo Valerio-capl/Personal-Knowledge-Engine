@@ -28,3 +28,24 @@ class SpaceResponse(BaseModel):
     space_id: str
     provider_name: str
     model_name: str
+
+
+class AskRequest(BaseModel):
+    question: str
+    provider_name: str
+    model_name: str
+    generation_provider: str
+    generation_model: str
+    top_k: int = 5
+    min_score: float = 0.3
+
+
+class SourceItem(BaseModel):
+    id: int
+    file: str
+    score: float
+
+
+class AskResponse(BaseModel):
+    answer: str
+    sources: list[SourceItem]
