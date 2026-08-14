@@ -6,6 +6,7 @@ load_dotenv()
 from database.db import Database
 from engine.space_manager import VectorSpaceManager
 from engine.sync import SyncEngine
+from engine.answer import AnswerEngine
 
 # created once when the app starts
 DB_PATH = "rag.db"
@@ -21,3 +22,6 @@ def get_vector_space_manager() -> VectorSpaceManager:
 
 def get_sync_engine() -> SyncEngine:
     return SyncEngine(database=get_database(), vector_space_manager=get_vector_space_manager())
+
+def get_answer_engine() -> AnswerEngine:
+    return AnswerEngine(vector_space_manager=get_vector_space_manager())
