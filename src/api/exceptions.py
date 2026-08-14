@@ -6,6 +6,12 @@ from document.exceptions import DocumentLoaderError
 from embedding.exceptions import EmbeddingError, InvalidEmbeddingConfigError, UnsupportedEmbeddingProviderError
 from engine.exceptions import SyncEngineError
 from vector_store.exceptions import UnsupportedVectorStoreError, VectorStoreError
+from generation.exceptions import (
+    GenerationAPIError,
+    GenerationError,
+    InvalidGenerationConfigError,
+    UnsupportedGenerationProviderError,
+)
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -35,3 +41,7 @@ def register_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(VectorStoreError, internal_error)
     app.add_exception_handler(DatabaseError, internal_error)
     app.add_exception_handler(SyncEngineError, internal_error)
+    app.add_exception_handler(UnsupportedGenerationProviderError, bad_request)
+    app.add_exception_handler(InvalidGenerationConfigError, misconfigured)
+    app.add_exception_handler(GenerationAPIError, upstream_failure)
+    app.add_exception_handler(GenerationError, internal_error)
