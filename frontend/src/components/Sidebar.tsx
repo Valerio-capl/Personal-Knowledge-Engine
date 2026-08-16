@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { SpaceSelector } from './SpaceSelector'
 
 const linkBaseClasses = 'block rounded-md px-3 py-2 text-sm font-medium transition-colors'
 const linkInactiveClasses = 'text-slate-300 hover:bg-slate-800 hover:text-white'
@@ -9,7 +10,7 @@ export function Sidebar() {
     <aside className="flex h-full w-64 flex-col gap-6 bg-slate-900 p-4">
       <div className="text-lg font-semibold text-white">Personal Knowledge Engine</div>
 
-      {/* TODO: SpaceSelector dropdown here */}
+      <SpaceSelector />
 
       <nav className="flex flex-col gap-1">
         <NavLink
