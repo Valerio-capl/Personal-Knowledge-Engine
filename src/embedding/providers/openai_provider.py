@@ -47,8 +47,7 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
         resolved_api_key = api_key or os.environ.get("OPENAI_API_KEY")
         if not resolved_api_key:
             raise InvalidEmbeddingConfigError(
-                "OpenAI API key is missing: provide it explicitly with api_key= "
-                "or set the OPENAI_API_KEY environment variable"
+                "OpenAI API key is missing. Set OPENAI_API_KEY in your .env file."
             )
         self._client = OpenAI(api_key=resolved_api_key)
 
@@ -62,5 +61,5 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
         except (RateLimitError, APIConnectionError, APIError) as e:
             raise EmbeddingAPIError(f"embeddings.create call failed: {e}") from e
 
-        #lista di array numpy con dtype float32 per cosinesim
+        # numpy array list dtype float32 for cosinesim
         return [np.array(item.embedding, dtype=np.float32) for item in response.data]

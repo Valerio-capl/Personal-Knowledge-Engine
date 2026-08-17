@@ -14,8 +14,7 @@ class OpenAIGenerationProvider(GenerationProvider):
         resolved_api_key = api_key or os.environ.get("OPENAI_API_KEY")
         if not resolved_api_key:
             raise InvalidGenerationConfigError(
-                "OpenAI API key is missing: provide it explicitly with api_key= "
-                "or set the OPENAI_API_KEY environment variable"
+                "OpenAI API key is missing. Set OPENAI_API_KEY in your .env file."
             )
         self._client = OpenAI(api_key=resolved_api_key)
 
