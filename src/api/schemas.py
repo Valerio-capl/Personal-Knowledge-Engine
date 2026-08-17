@@ -37,7 +37,7 @@ class AskRequest(BaseModel):
     generation_provider: str
     generation_model: str
     top_k: int = Field(default=5, gt=0)
-    min_score: float = Field(default=0.3, ge=0.0, le=1.0)
+    min_score: float | None = Field(default=None, ge=0.0, le=1.0)
 
 
 class SourceItem(BaseModel):

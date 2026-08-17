@@ -4,19 +4,24 @@ from engine.space_manager import EmbeddingSpaceConfig, VectorSpaceManager
 from generation.providers import GenerationProvider
 from vector_store.store import SearchResult
 
-DEFAULT_MIN_SCORE = 0.3 # to calibrate
+PROVIDER_MIN_SCORES = {
+    "openai": 0.75,
+    "ollama": 0.55,
+} # to calibrate and add models
+FALLBACK_MIN_SCORE = 0.3
 DEFAULT_TOP_K = 5
 
 
-_PROMPT_TEMPLATE = """Answer the question using only the context below. Cite sources using [1], [2] etc. matching the context numbers. If the context doesn't contain the answer, say so clearly.
+_PROMPT_TEMPLATE = """You are a strict technical assistant. You must answer the user's question using ONLY the provided Context. 
+UNDER NO CIRCUMSTANCES should you use outside knowledge, external links, or invent information.
+If the Context does not contain enough explicit information to formulate a complete answer, you must respond EXACTLY with: "I don't have enough information in the indexed documents to answer this."
 
 Context:
 {context}
 
 Question: {question}
 
-Answer:"""
-
+Answer (with [1], [2] citations):"""
 _NO_CONTEXT_ANSWER = "I couldn't find relevant information in your documents for this question."
 
 @dataclass(frozen=True)
@@ -40,10 +45,15 @@ class AnswerEngine:
         space: EmbeddingSpaceConfig,
         generation_provider: GenerationProvider,
         top_k: int = DEFAULT_TOP_K,
-        min_score: float = DEFAULT_MIN_SCORE,
+        min_score: float | None = None,
     ) -> AnswerResult:
+        if min_score is None:
+            actual_min_score = PROVIDER_MIN_SCORES.get(space.provider_name, FALLBACK_MIN_SCORE)
+        else:
+            actual_min_score = min_score
+
         results = self._vsm.search(space, question, top_k=top_k)
-        relevant_results = [r for r in results if r.score >= min_score]
+        relevant_results = [r for r in results if r.score >= actual_min_score]
 
         if not relevant_results:
             return AnswerResult(answer=_NO_CONTEXT_ANSWER, sources=[])
