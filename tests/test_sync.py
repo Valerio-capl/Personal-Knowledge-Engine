@@ -38,7 +38,9 @@ SPACE = EmbeddingSpaceConfig(provider_name="ollama", model_name="fake-model")
 
 @pytest.fixture
 def db(tmp_path):
-    return Database(tmp_path / "db" / "test.db")
+    db_dir = tmp_path / "db"
+    db_dir.mkdir()
+    return Database(db_dir / "test.db")
 
 @pytest.fixture
 def docs_dir(tmp_path):
