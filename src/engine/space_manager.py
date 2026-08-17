@@ -39,8 +39,8 @@ class VectorSpaceManager:
         self._db = database
 
     def index_chunks(self, space: EmbeddingSpaceConfig, chunks: list[Chunk]) -> None:
-        self._db.register_space(space.space_id, space.provider_name, space.model_name)
         embedder = self._get_embedder(space)
+        self._db.register_space(space.space_id, space.provider_name, space.model_name)
         embedded_chunks = embedder.embed_chunks(chunks)
         store = self._get_store(space, dimensions=embedder.dimensions)
         store.add(embedded_chunks)
