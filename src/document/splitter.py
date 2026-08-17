@@ -46,8 +46,8 @@ class TextSplitter(ABC):
         return len(self._encoding.encode(text, disallowed_special=()))
     
     @staticmethod
-    def _make_chunk_id(filepath: str, chunk_index: int) -> str:
-        raw = f"{filepath}:{chunk_index}"
+    def _make_chunk_id(metadata: FileMetadata, chunk_index: int) -> str:
+        raw = f"{metadata.filepath}:{metadata.page_number}:{chunk_index}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
@@ -142,7 +142,7 @@ class RecursiveCharacterTextSplitter(TextSplitter):
                 chunk_index=idx,
                 token_count=self._count_tokens(text),
                 source_metadata=metadata,
-                chunk_id=self._make_chunk_id(metadata.filepath, idx),
+                chunk_id=self._make_chunk_id(metadata, idx),
             ))
             idx += 1
         return chunks
@@ -170,7 +170,7 @@ class MarkdownAwareTextSplitter(TextSplitter):
                     chunk_index=idx,
                     token_count=self._count_tokens(section_text),
                     source_metadata=document.metadata,
-                    chunk_id=self._make_chunk_id(document.metadata.filepath, idx),
+                    chunk_id=self._make_chunk_id(document.metadata, idx),
                     section_title=section_title,
                 ))
                 idx += 1
@@ -186,7 +186,7 @@ class MarkdownAwareTextSplitter(TextSplitter):
                     chunk_index=idx,
                     token_count=self._count_tokens(sub_text),
                     source_metadata=document.metadata,
-                    chunk_id=self._make_chunk_id(document.metadata.filepath, idx),
+                    chunk_id=self._make_chunk_id(document.metadata, idx),
                     section_title=section_title,
                 ))
                 idx += 1
