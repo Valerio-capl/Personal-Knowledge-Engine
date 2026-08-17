@@ -5,8 +5,8 @@ from generation.providers import GenerationProvider
 from vector_store.store import SearchResult
 
 PROVIDER_MIN_SCORES = {
-    "openai": 0.75,
-    "ollama": 0.55,
+    "openai": 0.65,
+    "ollama": 0.45,
 } # to calibrate and add models
 FALLBACK_MIN_SCORE = 0.3
 DEFAULT_TOP_K = 5
@@ -14,6 +14,8 @@ DEFAULT_TOP_K = 5
 
 _PROMPT_TEMPLATE = """You are a strict technical assistant. You must answer the user's question using ONLY the provided Context. 
 UNDER NO CIRCUMSTANCES should you use outside knowledge, external links, or invent information.
+The Context is made of separate excerpts extracted from real documents — they may be fragmented or not perfectly continuous. Synthesize and connect information across multiple excerpts when needed to form a complete answer.
+Be thorough: if the Context includes definitions, properties, lists, or steps relevant to the question, include all of them in your answer instead of summarizing them away.
 If the Context does not contain enough explicit information to formulate a complete answer, you must respond EXACTLY with: "I don't have enough information in the indexed documents to answer this."
 
 Context:
