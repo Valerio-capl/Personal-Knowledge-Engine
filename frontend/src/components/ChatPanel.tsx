@@ -2,15 +2,13 @@ import { useState } from 'react'
 import { runAsk } from '../api/ask'
 import { ApiError } from '../api/client'
 import { useSpaceContext } from '../context/SpaceContext'
+import { useGenerationContext } from '../context/GenerationContext'
 import { MessageBubble } from './MessageBubble'
 import type { ChatMessage } from '../types/chat'
 
-// TEMP: hardcoded default until the gen provider/model selector is built.
-export const DEFAULT_GENERATION_PROVIDER = 'ollama'
-export const DEFAULT_GENERATION_MODEL = 'llama3.1'
-
 export function ChatPanel() {
   const { activeSpace } = useSpaceContext()
+  const { provider: generationProvider, model: generationModel } = useGenerationContext()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -31,8 +29,8 @@ export function ChatPanel() {
         question,
         provider_name: activeSpace.provider_name,
         model_name: activeSpace.model_name,
-        generation_provider: DEFAULT_GENERATION_PROVIDER,
-        generation_model: DEFAULT_GENERATION_MODEL,
+        generation_provider: generationProvider,
+        generation_model: generationModel,
       })
 
       setMessages((prev) => [

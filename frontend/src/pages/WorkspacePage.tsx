@@ -1,14 +1,17 @@
 import { SpaceSelector } from '../components/SpaceSelector'
 import { SyncBox } from '../components/SyncBox'
+import { GenerationSelector } from '../components/GenerationSelector'
 import { SearchDebugLink } from '../components/SearchDebugLink'
 import { ChatPanel } from '../components/ChatPanel'
 
 export function WorkspacePage() {
   return (
-    <div className="flex h-full gap-8 p-8">
-      <div className="flex w-[30rem] flex-shrink-0 flex-col gap-4">
+    <div className="flex h-full justify-center gap-8 p-8">
+      <div className="flex w-[35rem] flex-shrink-0 flex-col gap-4">
         <SpaceSelector />
+        <GenerationSelector />
         <SyncBox />
+        <div className="flex-1" />
         <SearchDebugLink />
       </div>
 
