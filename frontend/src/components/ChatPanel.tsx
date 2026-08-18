@@ -61,6 +61,14 @@ export function ChatPanel() {
         {messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
         ))}
+        {isSending && (
+          <div className="flex justify-start">
+            <div className="flex items-center gap-2 rounded-lg bg-stone-800 px-4 py-2 text-sm text-stone-400">
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-stone-500 border-t-transparent" />
+              Thinking...
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="border-t border-stone-800 p-4">
