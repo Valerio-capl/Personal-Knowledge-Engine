@@ -14,6 +14,7 @@ export interface SyncResponse {
   synced: string[]
   skipped: string[]
   failed: [string, string][]
+  deleted: string[]
 }
 
 export interface SearchRequest {

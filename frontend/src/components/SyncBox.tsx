@@ -96,6 +96,7 @@ export function SyncBox() {
         <div className="mt-3 space-y-1 text-xs text-stone-400">
           <p>Synced: {report.synced.length}</p>
           <p>Skipped: {report.skipped.length}</p>
+          <p>Deleted: {report.deleted.length}</p>
           <p>Failed: {report.failed.length}</p>
           {report.failed.length > 0 && (
             <ul className="mt-1 space-y-0.5 text-red-400">

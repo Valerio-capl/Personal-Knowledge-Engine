@@ -9,6 +9,7 @@ class SyncResponse(BaseModel):
     synced: list[str]
     skipped: list[str]
     failed: list[tuple[str, str]]
+    deleted: list[str]
 
 
 class SearchRequest(BaseModel):

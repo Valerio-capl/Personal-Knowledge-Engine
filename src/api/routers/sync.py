@@ -19,4 +19,5 @@ def run_sync(request: SyncRequest, sync_engine: SyncEngine = Depends(get_sync_en
         synced=report.synced,
         skipped=report.skipped,
         failed=report.failed,
+        deleted=report.deleted,
     )
