@@ -17,6 +17,7 @@ class SyncReport:
     synced: list[str] = field(default_factory=list)
     skipped: list[str] = field(default_factory=list)
     failed: list[tuple[str, str]] = field(default_factory=list)
+    deleted: list[str] = field(default_factory=list)
 
     @property
     def total_processed(self) -> int:
@@ -35,6 +36,7 @@ class SyncEngine:
             if not file_path.is_file():
                 continue
             self._sync_file(file_path, space, report)
+        self._handle_deleted_files(base_folder, space, report)
         self._vsm.persist(space)
         return report
 
@@ -81,6 +83,20 @@ class SyncEngine:
             self._db.upsert_file(str(file_path), content_hash, space.space_id)
         except (EmbeddingError, VectorStoreError) as e:
             raise FileSyncError(f"failed to index {file_path}: {e}") from e
+
+    def _handle_deleted_files(self, base_folder: Path, space: EmbeddingSpaceConfig, report: SyncReport) -> None:
+        resolved_base = base_folder.resolve()
+        tracked_filepaths = self._db.get_indexed_filepaths(space.space_id)
+
+        for filepath in tracked_filepaths:
+            path = Path(filepath)
+            if resolved_base not in path.parents:
+                continue
+            if path.is_file():
+                continue
+            self._remove_old_chunks(path, space)
+            self._db.delete_file(filepath)
+            report.deleted.append(filepath)
 
     def _remove_old_chunks(self, file_path: Path, space: EmbeddingSpaceConfig) -> None:
         old_chunk_ids = self._db.get_chunk_ids_for_file(str(file_path), space.space_id)

@@ -93,3 +93,14 @@ def test_delete_chunks_for_file_is_scoped_by_space_id(db):
 
 def test_delete_chunks_for_file_on_nonexistent_file_is_noop(db):
     db.delete_chunks_for_file("/tmp/never_indexed.txt", "space_1")
+
+
+def test_get_indexed_filepaths_returns_files_for_space(db):
+    db.upsert_file("/tmp/a.txt", "hash_a", "space_1")
+    db.upsert_file("/tmp/b.txt", "hash_b", "space_1")
+    db.upsert_file("/tmp/c.txt", "hash_c", "space_2")
+    filepaths = db.get_indexed_filepaths("space_1")
+    assert sorted(filepaths) == ["/tmp/a.txt", "/tmp/b.txt"]
+
+def test_get_indexed_filepaths_returns_empty_list_when_none(db):
+    assert db.get_indexed_filepaths("space_1") == []

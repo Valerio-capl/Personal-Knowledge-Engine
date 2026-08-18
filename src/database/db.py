@@ -96,11 +96,19 @@ class Database:
         return [row["chunk_id"] for row in rows]
 
 
-
     def delete_chunks_for_file(self, filepath: str, space_id: str) -> None:
         with self._connect() as conn:
             conn.execute(
                 "DELETE FROM chunks WHERE filepath = ? AND space_id = ?", (filepath, space_id)
             )
+            
+    def delete_file(self, filepath: str) -> None:
+        with self._connect() as conn:
+            conn.execute("DELETE FROM indexed_files WHERE filepath = ?", (filepath,))
 
-        # FIXME: delete the actual vectors from the VectorStore separately
+    def get_indexed_filepaths(self, space_id: str) -> list[str]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT filepath FROM indexed_files WHERE space_id = ?", (space_id,)
+            ).fetchall()
+        return [row["filepath"] for row in rows]

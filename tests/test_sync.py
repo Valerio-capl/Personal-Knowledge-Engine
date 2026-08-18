@@ -132,3 +132,32 @@ def test_sync_raises_when_folder_is_actually_a_file(db, docs_dir):
     not_a_folder.write_text("just a file")
     with pytest.raises(NotADirectoryError):
         engine.sync(not_a_folder, SPACE)
+
+
+def test_sync_removes_chunks_for_deleted_files(db, docs_dir):
+    vsm = _FakeVectorSpaceManager()
+    engine = SyncEngine(db, vsm)
+    file_path = docs_dir / "note.txt"
+    file_path.write_text("some content")
+    engine.sync(docs_dir, SPACE)
+    db.add_chunks(str(file_path), SPACE.space_id, ["chunk_1", "chunk_2"])
+    file_path.unlink()
+    report = engine.sync(docs_dir, SPACE)
+
+    assert report.deleted == [str(file_path)]
+    assert vsm.deleted == [(SPACE, ["chunk_1", "chunk_2"])]
+    assert db.get_file_hash(str(file_path)) is None
+    assert db.get_chunk_ids_for_file(str(file_path), SPACE.space_id) == []
+
+
+def test_sync_does_not_delete_files_tracked_outside_the_synced_folder(db, docs_dir, tmp_path):
+    vsm = _FakeVectorSpaceManager()
+    engine = SyncEngine(db, vsm)
+    other_folder = tmp_path / "other_docs"
+    other_folder.mkdir()
+    other_file = other_folder / "external.txt"
+    db.upsert_file(str(other_file.resolve()), "some_hash", SPACE.space_id)
+    db.add_chunks(str(other_file.resolve()), SPACE.space_id, ["external_chunk"])
+    report = engine.sync(docs_dir, SPACE)
+    assert report.deleted == []
+    assert vsm.deleted == []
