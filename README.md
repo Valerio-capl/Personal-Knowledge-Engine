@@ -66,3 +66,4 @@ Core pipeline complete and working end-to-end through both the API and the web U
 Remaining known gaps:
 * No automatic retry on generation provider failures (embedding providers already retry with backoff).
 * Vector search is brute-force cosine similarity over the full in-memory matrix (O(N) per query), not an approximate nearest-neighbor index — fine for small/medium personal collections, but won't scale to very large document sets without a different vector store backend.
+* Lack of containerization or standardized deployment packaging for consistent, isolated cross-platform execution.
