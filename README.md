@@ -13,6 +13,11 @@ Instead of relying on heavy abstractions like LangChain or LlamaIndex, this proj
 * **FastAPI Backend**: REST API for sync, search, ask, and space discovery.
 * **React Frontend**: Local web UI built with TypeScript and Tailwind CSS.
 
+## Screenshot
+<p align="center">
+  <img src="README-img/screenshot-1.png"/>
+</p>
+
 ## Tech Stack
 **Backend**
 * Python 3, FastAPI, SQLite, NumPy
